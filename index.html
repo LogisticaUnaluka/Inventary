@@ -3,82 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Búsqueda de Inventario</title>
+    <title>Sistema de Inventario</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding-top: 20px;
-            background-color: #f8f9fa;
-        }
-        .container {
-            max-width: 1200px;
-        }
-        .card {
-            margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-            border: none;
-        }
-        .card-header {
-            font-weight: 600;
-        }
-        .progress-bar {
-            transition: width 0.3s ease;
-        }
-        .product-image {
-            max-height: 300px;
-            object-fit: contain;
-            cursor: pointer;
-        }
-        #searchResults {
-            max-height: 300px;
-            overflow-y: auto;
-            position: absolute;
-            width: calc(100% - 2rem);
-            z-index: 1000;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .result-item {
-            cursor: pointer;
-            padding: 8px 15px;
-            transition: background-color 0.2s;
-        }
-        .result-item:hover {
-            background-color: #f5f5f5;
-        }
-        .trend-graph {
-            height: 200px;
-        }
-        .hidden {
-            display: none;
-        }
-        .fade-in {
-            animation: fadeIn 0.3s;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        .top-bar {
-            background-color: #343a40;
-            color: white;
-            padding: 10px 0;
-            margin-bottom: 30px;
-        }
-        .footer {
-            background-color: #343a40;
-            color: white;
-            padding: 20px 0;
-            margin-top: 30px;
-        }
-        .month-filter {
-            margin-bottom: 20px;
-        }
-        .product-image-container {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+        body { font-family: Arial, sans-serif; background-color: #f8f9fa; padding-top: 20px; }
+        .card { margin-bottom: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border: none; }
+        .top-bar { background-color: #343a40; color: white; padding: 10px 0; margin-bottom: 30px; }
+        .footer { background-color: #343a40; color: white; padding: 20px 0; margin-top: 30px; }
+        #searchResults { max-height: 300px; overflow-y: auto; position: absolute; width: calc(100% - 2rem); z-index: 1000; }
+        .result-item { cursor: pointer; padding: 8px 15px; transition: background-color 0.2s; }
+        .result-item:hover { background-color: #f5f5f5; }
+        .hidden { display: none; }
+        .trend-graph { height: 250px; }
+        .product-image { max-height: 200px; object-fit: contain; }
+        .availability-bar { height: 20px; border-radius: 4px; background-color: #e9ecef; }
+        .availability-progress { height: 100%; border-radius: 4px; background-color: #28a745; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -100,12 +40,11 @@
         <!-- Filtro de mes -->
         <div class="row mb-4">
             <div class="col-md-4 offset-md-4">
-                <div class="card month-filter">
+                <div class="card">
                     <div class="card-body">
                         <label for="monthSelect" class="form-label">Filtrar por Mes:</label>
                         <select id="monthSelect" class="form-select">
                             <option value="all">Todos los meses</option>
-                            <!-- Opciones de meses se llenarán dinámicamente -->
                         </select>
                     </div>
                 </div>
@@ -123,9 +62,7 @@
                                 <i class="bi bi-search"></i> Buscar
                             </button>
                         </div>
-                        <div id="searchResults" class="list-group hidden">
-                            <!-- Resultados de búsqueda aparecerán aquí -->
-                        </div>
+                        <div id="searchResults" class="list-group hidden"></div>
                     </div>
                 </div>
             </div>
@@ -160,7 +97,7 @@
         </div>
 
         <!-- Información del Producto (inicialmente oculta) -->
-        <div id="productInfo" class="fade-in hidden">
+        <div id="productInfo" class="hidden">
             <div class="row">
                 <!-- Detalles del Producto -->
                 <div class="col-md-6">
@@ -169,11 +106,6 @@
                             <h5 class="mb-0">Detalles del Producto</h5>
                         </div>
                         <div class="card-body">
-                            <!-- Imagen del Producto -->
-                            <div class="product-image-container">
-                                <img id="productImage" src="" alt="Imagen del producto" class="product-image img-fluid mb-3">
-                            </div>
-                            
                             <div class="row mb-2">
                                 <div class="col-4 fw-bold">SKU:</div>
                                 <div class="col-8" id="productSKU"></div>
@@ -183,12 +115,24 @@
                                 <div class="col-8" id="productName"></div>
                             </div>
                             <div class="row mb-2">
+                                <div class="col-4 fw-bold">Empresa:</div>
+                                <div class="col-8" id="productCompany"></div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-4 fw-bold">Marca:</div>
+                                <div class="col-8" id="productBrand"></div>
+                            </div>
+                            <div class="row mb-2">
                                 <div class="col-4 fw-bold">Stock Odoo:</div>
                                 <div class="col-8" id="productStockOdoo"></div>
                             </div>
                             <div class="row mb-2">
                                 <div class="col-4 fw-bold">Stock Físico:</div>
                                 <div class="col-8" id="productStockFisico"></div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-4 fw-bold">Stock Inicial:</div>
+                                <div class="col-8" id="productStockInicial"></div>
                             </div>
                             <div class="row mb-2">
                                 <div class="col-4 fw-bold">Venta Diaria:</div>
@@ -218,14 +162,55 @@
                     </div>
                 </div>
 
-                <!-- Análisis de tendencia -->
+                <!-- Imagen y Resumen de Ventas -->
                 <div class="col-md-6">
-                    <div class="card">
+                    <!-- Imagen del Producto -->
+                    <div class="card mb-4">
                         <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">Imagen del Producto</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <img id="productImage" src="" alt="Imagen del producto" class="product-image img-fluid">
+                        </div>
+                    </div>
+                    
+                    <!-- Resumen de Ventas -->
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0">Resumen de Ventas</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-2">
+                                <div class="col-6 fw-bold">Total Vendido:</div>
+                                <div class="col-6" id="totalVendido"></div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-6 fw-bold">Porcentaje Vendido:</div>
+                                <div class="col-6" id="porcentajeVendido"></div>
+                            </div>
+                            <div class="mb-2">
+                                <div class="availability-bar">
+                                    <div class="availability-progress" id="ventaProgressBar"></div>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-6 fw-bold">Disponibilidad:</div>
+                                <div class="col-6" id="disponibilidad"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Análisis de tendencia -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-warning text-dark">
                             <h5 class="mb-0">Análisis de Tendencia</h5>
                         </div>
                         <div class="card-body">
-                            <div id="trendGraph" class="trend-graph">
+                            <div class="trend-graph">
                                 <canvas id="salesChart"></canvas>
                             </div>
                         </div>
@@ -248,7 +233,7 @@
             </div>
             
             <!-- Botón para volver a la búsqueda -->
-            <div class="row mt-4">
+            <div class="row mt-4 mb-5">
                 <div class="col-12 text-center">
                     <button id="backButton" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-left"></i> Volver a la búsqueda
@@ -287,30 +272,18 @@
     <script>
         // URL del Apps Script Web App
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyl5zhK0DJTQI44AtkH6gG1JrEuRU5aosjA1ePk00Q3QL2hJx7o6HGC7eSzTDkMxbWt/exec';
-
-        // Variables globales para almacenar datos
+        
+        // Variables globales
         let inventarioData = [];
         let months = [];
         let filteredData = [];
         let currentMonth = 'all';
-
-        // Función para manejar valores seguros y redondearlos
-        function safeNumber(value, defaultValue = 0) {
-            if (value === null || value === undefined || value === "" || value === "-") {
-                return defaultValue;
-            }
-            const num = parseFloat(value);
-            return isNaN(num) ? defaultValue : Math.round(num);
-        }
-
-        // Función para manejar cadenas de texto seguras
-        function safeString(value) {
-            if (value === null || value === undefined) {
-                return "";
-            }
-            return String(value);
-        }
-
+        let dataLoaded = false;
+        
+        // Cache para almacenar los datos
+        const LOCAL_STORAGE_KEY = 'inventoryData';
+        const CACHE_EXPIRATION = 1000 * 60 * 30; // 30 minutos
+        
         // Inicializar la aplicación
         document.addEventListener('DOMContentLoaded', function() {
             // Referencias a elementos del DOM
@@ -319,20 +292,20 @@
             const searchResults = document.getElementById('searchResults');
             const productInfo = document.getElementById('productInfo');
             const backButton = document.getElementById('backButton');
-            const loadingIndicator = document.getElementById('loadingIndicator');
             const monthSelect = document.getElementById('monthSelect');
             
-            // Cargar datos con tiempo límite para evitar bloqueos
-            fetchDataWithTimeout();
+            // Intentar cargar datos de caché primero
+            tryLoadFromCache();
             
-            // Configurar evento para filtro de mes
+            // También cargar datos frescos del servidor
+            fetchData();
+            
+            // Eventos
             monthSelect.addEventListener('change', function() {
                 currentMonth = this.value;
-                applyMonthFilter();
-                updateDashboardSummary();
+                applyFilter();
             });
             
-            // Configurar eventos de búsqueda
             searchButton.addEventListener('click', performSearch);
             searchInput.addEventListener('input', function() {
                 if (searchInput.value.length >= 2) {
@@ -341,16 +314,15 @@
                     searchResults.classList.add('hidden');
                 }
             });
+            
             searchInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     performSearch();
                 }
             });
             
-            // Botón para volver
             backButton.addEventListener('click', function() {
                 productInfo.classList.add('hidden');
-                searchInput.focus();
             });
             
             // Cerrar resultados al hacer clic fuera
@@ -360,11 +332,42 @@
                 }
             });
         });
-
-        // Cargar datos con tiempo límite para evitar carga infinita
-        function fetchDataWithTimeout() {
+        
+        // Intentar cargar datos desde el caché
+        function tryLoadFromCache() {
+            try {
+                const cachedData = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (cachedData) {
+                    const data = JSON.parse(cachedData);
+                    
+                    // Verificar si el caché es válido
+                    if (data.timestamp && (Date.now() - data.timestamp) < CACHE_EXPIRATION) {
+                        console.log('Usando datos en caché');
+                        inventarioData = data.inventario || [];
+                        months = data.months || [];
+                        filteredData = [...inventarioData];
+                        
+                        populateMonthSelect();
+                        updateDashboard();
+                        
+                        if (data.lastDate) {
+                            document.getElementById('lastUpdated').textContent = new Date(data.lastDate).toLocaleDateString();
+                        }
+                        
+                        document.getElementById('loadingIndicator').classList.add('hidden');
+                        dataLoaded = true;
+                    }
+                }
+            } catch (e) {
+                console.error('Error al cargar desde caché:', e);
+                // Si hay error, continuar con la carga normal
+            }
+        }
+        
+        // Cargar datos del servidor
+        function fetchData() {
             const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(() => reject(new Error('Tiempo de espera agotado')), 30000); // 30 segundos de tiempo límite
+                setTimeout(() => reject('Tiempo de espera agotado'), 20000);
             });
             
             const fetchPromise = fetch(APPS_SCRIPT_URL)
@@ -377,41 +380,65 @@
             
             Promise.race([fetchPromise, timeoutPromise])
                 .then(data => {
-                    // Guardar datos
-                    if (data.inventario) {
-                        inventarioData = data.inventario;
-                        console.log('Datos de Inventario cargados:', inventarioData.length, 'registros');
-                        
-                        // Inicializar datos filtrados con todos los datos
+                    // Guardar datos en caché con timestamp
+                    data.timestamp = Date.now();
+                    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+                    
+                    // Solo actualizar la UI si no se cargaron datos desde caché
+                    if (!dataLoaded) {
+                        inventarioData = data.inventario || [];
+                        months = data.months || [];
                         filteredData = [...inventarioData];
-                    }
-                    
-                    if (data.months) {
-                        months = data.months;
+                        
                         populateMonthSelect();
+                        updateDashboard();
+                        
+                        if (data.lastDate) {
+                            document.getElementById('lastUpdated').textContent = new Date(data.lastDate).toLocaleDateString();
+                        }
+                        
+                        document.getElementById('loadingIndicator').classList.add('hidden');
+                    } else {
+                        // Si los datos ya están cargados, actualizar silenciosamente
+                        inventarioData = data.inventario || [];
+                        months = data.months || [];
+                        filteredData = [...inventarioData];
+                        
+                        // Solo actualizar si hay cambios
+                        if (data.lastDate && data.lastDate !== document.getElementById('lastUpdated').textContent) {
+                            document.getElementById('lastUpdated').textContent = new Date(data.lastDate).toLocaleDateString();
+                            populateMonthSelect();
+                            updateDashboard();
+                        }
                     }
-                    
-                    // Actualizar dashboard
-                    updateDashboardSummary();
-                    
-                    // Mostrar fecha de la última actualización
-                    if (data.lastDate) {
-                        document.getElementById('lastUpdated').textContent = new Date(data.lastDate).toLocaleDateString();
-                    }
-                    
-                    // Ocultar indicador de carga
-                    document.getElementById('loadingIndicator').classList.add('hidden');
                 })
                 .catch(error => {
                     console.error('Error al cargar datos:', error);
-                    // Ocultar indicador de carga
-                    document.getElementById('loadingIndicator').classList.add('hidden');
                     
-                    // Mostrar mensaje de error
-                    alert('Error al cargar datos del inventario: ' + error.message);
+                    // Solo mostrar error si no hay datos en caché
+                    if (!dataLoaded) {
+                        document.getElementById('loadingIndicator').classList.add('hidden');
+                        alert('Error al cargar datos del inventario. Intente refrescar la página.');
+                    }
                 });
         }
-
+        
+        // Funciones de utilidad
+        function safeNumber(value, defaultValue = 0) {
+            if (value === null || value === undefined || value === "" || value === "-") {
+                return defaultValue;
+            }
+            const num = parseFloat(value);
+            return isNaN(num) ? defaultValue : Math.round(num);
+        }
+        
+        function safeString(value) {
+            if (value === null || value === undefined) {
+                return "";
+            }
+            return String(value);
+        }
+        
         // Poblar el selector de meses
         function populateMonthSelect() {
             const monthSelect = document.getElementById('monthSelect');
@@ -428,24 +455,22 @@
                 monthSelect.appendChild(option);
             });
         }
-
+        
         // Aplicar filtro por mes
-        function applyMonthFilter() {
+        function applyFilter() {
             if (currentMonth === 'all') {
                 filteredData = [...inventarioData];
             } else {
                 filteredData = inventarioData.filter(item => item.Mes === currentMonth);
             }
             
-            // Actualizar la interfaz
-            updateDashboardSummary();
+            updateDashboard();
         }
         
-        // Actualizar resumen del dashboard
-        function updateDashboardSummary() {
+        // Actualizar dashboard
+        function updateDashboard() {
             // Encontrar la última fecha en los datos filtrados
             let lastDate = null;
-            
             filteredData.forEach(item => {
                 if (item.Fecha && (!lastDate || new Date(item.Fecha) > new Date(lastDate))) {
                     lastDate = item.Fecha;
@@ -455,7 +480,7 @@
             // Filtrar por la última fecha
             const lastDateData = filteredData.filter(item => item.Fecha === lastDate);
             
-            // Calcular totales para la última fecha
+            // Calcular totales
             let totalStockFisico = 0;
             let totalReposicionNecesaria = 0;
             let recomendacionCount = 0;
@@ -464,19 +489,18 @@
                 totalStockFisico += safeNumber(item.StockFisico);
                 totalReposicionNecesaria += safeNumber(item.ReposicionNecesaria);
                 
-                // Verificación segura para la recomendación
-                const recomendacion = safeString(item.Recomendacion);
-                if (recomendacion && recomendacion.trim() !== '') {
+                const recomendacion = safeNumber(item.Recomendacion);
+                if (recomendacion > 0) {
                     recomendacionCount++;
                 }
             });
             
-            // Actualizar la interfaz con valores redondeados
+            // Actualizar UI con valores redondeados
             document.getElementById('stockFisico').textContent = Math.round(totalStockFisico);
             document.getElementById('reposicionNecesaria').textContent = Math.round(totalReposicionNecesaria);
             document.getElementById('recomendacionTotal').textContent = recomendacionCount;
         }
-
+        
         // Realizar búsqueda
         function performSearch() {
             const searchInput = document.getElementById('searchInput');
@@ -488,9 +512,8 @@
                 return;
             }
             
-            // Encontrar la última fecha para cada SKU para evitar duplicados
+            // Deduplicar productos por SKU (quedarse con el más reciente)
             const latestProducts = {};
-            
             filteredData.forEach(item => {
                 const sku = safeString(item.SKU);
                 if (!latestProducts[sku] || new Date(item.Fecha) > new Date(latestProducts[sku].Fecha)) {
@@ -498,9 +521,8 @@
                 }
             });
             
-            // Convertir a array y filtrar por búsqueda
-            const latestProductsArray = Object.values(latestProducts);
-            const results = latestProductsArray.filter(item => 
+            // Filtrar resultados
+            const results = Object.values(latestProducts).filter(item => 
                 (safeString(item.SKU).toUpperCase().includes(query)) || 
                 (safeString(item.Producto).toUpperCase().includes(query))
             );
@@ -516,7 +538,7 @@
                     resultItem.addEventListener('click', function() {
                         displayProductInfo(item.SKU);
                         searchResults.classList.add('hidden');
-                        searchInput.value = item.SKU; // Colocar el SKU en el campo de búsqueda
+                        searchInput.value = item.SKU;
                     });
                     searchResults.appendChild(resultItem);
                 });
@@ -526,7 +548,7 @@
                 searchResults.classList.remove('hidden');
             }
         }
-
+        
         // Mostrar información del producto
         function displayProductInfo(sku) {
             // Filtrar datos del producto por SKU
@@ -541,145 +563,213 @@
             productData.sort((a, b) => new Date(b.Fecha) - new Date(a.Fecha));
             const latestProduct = productData[0];
             
-            // Mostrar sección de información del producto
+            // Mostrar sección de información
             document.getElementById('productInfo').classList.remove('hidden');
             
-            // Llenar datos del producto con valores redondeados
+            // Llenar datos del producto
             document.getElementById('productSKU').textContent = safeString(latestProduct.SKU);
             document.getElementById('productName').textContent = safeString(latestProduct.Producto);
+            document.getElementById('productCompany').textContent = safeString(latestProduct.Empresa);
+            document.getElementById('productBrand').textContent = safeString(latestProduct.Marca);
             document.getElementById('productStockOdoo').textContent = safeNumber(latestProduct.StockOdoo);
             document.getElementById('productStockFisico').textContent = safeNumber(latestProduct.StockFisico);
+            document.getElementById('productStockInicial').textContent = safeNumber(latestProduct.StockInicial);
             document.getElementById('productVentaDiaria').textContent = safeNumber(latestProduct.VentaDiaria);
             document.getElementById('productVentaSemanal').textContent = safeNumber(latestProduct.VentaSemanal);
             document.getElementById('productPorcentajeVenta').textContent = `${safeNumber(latestProduct.PorcentajeVentaSemanal)}%`;
             document.getElementById('productReposicion').textContent = safeNumber(latestProduct.ReposicionNecesaria);
-            document.getElementById('productRecomendacion').textContent = safeString(latestProduct.Recomendacion);
+            
+            // Redondear el valor de la recomendación
+            document.getElementById('productRecomendacion').textContent = safeNumber(latestProduct.Recomendacion);
+            
             document.getElementById('productFecha').textContent = latestProduct.Fecha ? new Date(latestProduct.Fecha).toLocaleDateString() : '';
+            
+            // Resumen de ventas
+            const totalVendido = safeNumber(latestProduct.VentaSemanal);
+            const stockInicial = safeNumber(latestProduct.StockInicial);
+            
+            let porcentajeVendido = 0;
+            if (stockInicial > 0) {
+                porcentajeVendido = Math.round((totalVendido / stockInicial) * 100);
+            }
+            
+            document.getElementById('totalVendido').textContent = `${totalVendido} unidades`;
+            document.getElementById('porcentajeVendido').textContent = `${porcentajeVendido}%`;
+            
+            // Barra de progreso
+            const ventaProgressBar = document.getElementById('ventaProgressBar');
+            ventaProgressBar.style.width = `${porcentajeVendido}%`;
+            ventaProgressBar.textContent = `${porcentajeVendido}%`;
+            
+            // Disponibilidad
+            const stockActual = safeNumber(latestProduct.StockFisico);
+            document.getElementById('disponibilidad').textContent = `${stockActual} unidades`;
             
             // Imagen del producto
             const productImage = document.getElementById('productImage');
             if (latestProduct.ImagenReferencia && latestProduct.ImagenReferencia.trim() !== '') {
                 productImage.src = latestProduct.ImagenReferencia;
-                productImage.parentElement.classList.remove('hidden');
             } else {
-                productImage.src = '';
-                productImage.parentElement.classList.add('hidden');
+                productImage.src = 'https://via.placeholder.com/300x300?text=No+Imagen';
             }
             
-            // Actualizar gráfico de tendencia
+            // Actualizar gráfico y análisis
             updateTrendChart(sku);
+            generateAnalysisText(latestProduct, productData);
             
-            // Generar texto de análisis
-            generateAnalysisText(sku, productData);
-            
-            // Hacer scroll al detalle del producto
+            // Scroll al detalle del producto
             document.getElementById('productInfo').scrollIntoView({
                 behavior: 'smooth',
                 block: 'start'
             });
         }
-
+        
         // Actualizar gráfico de tendencia
         function updateTrendChart(sku) {
-            // Filtrar datos del producto por SKU
             const productData = filteredData.filter(item => safeString(item.SKU) === safeString(sku));
             
             if (productData.length === 0) {
                 return;
             }
             
-            // Ordenar por fecha (ascendente)
-            productData.sort((a, b) => new Date(a.Fecha) - new Date(b.Fecha));
+            // Ordenar por semana
+            productData.sort((a, b) => {
+                if (!a.Semana || !b.Semana) {
+                    return new Date(a.Fecha) - new Date(b.Fecha);
+                }
+                return parseInt(a.Semana) - parseInt(b.Semana);
+            });
             
-            // Preparar datos para el gráfico (con valores redondeados)
-            const labels = productData.map(item => `Sem ${item.Semana}`);
+            // Preparar datos
+            const labels = productData.map(item => `Sem ${item.Semana || 'N/A'}`);
             const ventaSemanalData = productData.map(item => safeNumber(item.VentaSemanal));
             const stockFisicoData = productData.map(item => safeNumber(item.StockFisico));
             
             const ctx = document.getElementById('salesChart').getContext('2d');
             
-            // Verificar si ya existe un gráfico y destruirlo
+            // Destruir gráfico existente
             if (window.salesChart) {
                 window.salesChart.destroy();
             }
             
-            // Crear nuevo gráfico
+            // Crear gráfico combinado
             window.salesChart = new Chart(ctx, {
-                type: 'line',
+                type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [
                         {
                             label: 'Venta Semanal',
                             data: ventaSemanalData,
-                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.7)',
                             borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 2,
-                            tension: 0.1
+                            borderWidth: 1
                         },
                         {
                             label: 'Stock Físico',
                             data: stockFisicoData,
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            type: 'line',
+                            backgroundColor: 'rgba(75, 192, 192, 0.1)',
                             borderColor: 'rgba(75, 192, 192, 1)',
                             borderWidth: 2,
-                            tension: 0.1
+                            pointRadius: a4,
+                            tension: 0.1,
+                            fill: false
                         }
                     ]
                 },
                 options: {
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Cantidad'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Semana'
+                            }
                         }
                     },
                     responsive: true,
-                    maintainAspectRatio: false
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw} unidades`;
+                                }
+                            }
+                        }
+                    }
                 }
             });
         }
-
+        
         // Generar texto de análisis
-        function generateAnalysisText(sku, productData) {
-            if (productData.length === 0) {
-                return;
-            }
-            
-            // Ordenar por fecha (descendente) para obtener el más reciente
-            productData.sort((a, b) => new Date(b.Fecha) - new Date(a.Fecha));
-            const latestProduct = productData[0];
+        function generateAnalysisText(latestProduct, productData) {
+            // Valores redondeados
+            const sku = safeString(latestProduct.SKU);
+            const nombre = safeString(latestProduct.Producto);
+            const stockFisico = safeNumber(latestProduct.StockFisico);
+            const ventaSemanal = safeNumber(latestProduct.VentaSemanal);
+            const porcentajeVenta = safeNumber(latestProduct.PorcentajeVentaSemanal);
+            const reposicionNecesaria = safeNumber(latestProduct.ReposicionNecesaria);
+            const recomendacion = safeNumber(latestProduct.Recomendacion);
             
             // Calcular tendencia
             let trend = 'estable';
+            let changePercent = 0;
+            
             if (productData.length > 1) {
                 const lastTwoData = productData.slice(0, 2);
                 const currentSales = safeNumber(lastTwoData[0].VentaSemanal);
                 const previousSales = safeNumber(lastTwoData[1].VentaSemanal);
                 
-                if (currentSales > previousSales) {
+                if (currentSales > previousSales && previousSales > 0) {
                     trend = 'al alza';
-                } else if (currentSales < previousSales) {
+                    changePercent = Math.round(((currentSales - previousSales) / previousSales) * 100);
+                } else if (currentSales < previousSales && previousSales > 0) {
                     trend = 'a la baja';
+                    changePercent = Math.round(((previousSales - currentSales) / previousSales) * 100);
                 }
             }
             
-            // Generar texto de análisis con valores redondeados
-            let analysisText = `
-                El producto ${safeString(latestProduct.SKU)} (${safeString(latestProduct.Producto)}) muestra una tendencia de ventas ${trend}.
-                La venta semanal es de ${safeNumber(latestProduct.VentaSemanal)} unidades, lo que representa un ${safeNumber(latestProduct.PorcentajeVentaSemanal)}% del total.
-                El stock físico actual es de ${safeNumber(latestProduct.StockFisico)} unidades.
-            `;
+            // Generar texto
+            let analysisText = `El producto ${sku} (${nombre}) muestra una tendencia de ventas ${trend}`;
             
-            // Añadir recomendación si existe
-            const recomendacion = safeString(latestProduct.Recomendacion);
-            if (recomendacion && recomendacion.trim() !== '') {
-                analysisText += `\nRecomendación: ${recomendacion}`;
+            if (changePercent > 0) {
+                analysisText += ` con un ${changePercent}% de cambio respecto a la semana anterior.`;
+            } else {
+                analysisText += `.`;
+            }
+            
+            analysisText += `\nLa venta semanal es de ${ventaSemanal} unidades, lo que representa un ${porcentajeVenta}% del total.`;
+            analysisText += `\nEl stock físico actual es de ${stockFisico} unidades.`;
+            
+            // Añadir recomendación
+            if (recomendacion > 0) {
+                analysisText += `\n\nRecomendación: Se sugiere reponer ${recomendacion} unidades.`;
             }
             
             // Añadir información sobre reposición
-            const reposicionNecesaria = safeNumber(latestProduct.ReposicionNecesaria);
             if (reposicionNecesaria > 0) {
-                analysisText += `\nSe necesita reponer ${reposicionNecesaria} unidades.`;
+                analysisText += `\nSe necesita reponer ${reposicionNecesaria} unidades para mantener el inventario óptimo.`;
+            }
+            
+            // Alertas sobre el stock
+            if (stockFisico < ventaSemanal) {
+                analysisText += `\n\nALERTA: El stock actual (${stockFisico}) es menor que la venta semanal (${ventaSemanal}). Se recomienda reponer urgentemente.`;
+            } else if (stockFisico < ventaSemanal * 2) {
+                analysisText += `\n\nPRECAUCIÓN: El stock actual (${stockFisico}) cubre menos de 2 semanas de venta. Considere reponer pronto.`;
+            } else if (stockFisico > ventaSemanal * 8) {
+                analysisText += `\n\nNOTA: El stock actual (${stockFisico}) es elevado en comparación con la venta semanal. Posible sobrestock.`;
             }
             
             document.getElementById('analysisText').textContent = analysisText.trim();
